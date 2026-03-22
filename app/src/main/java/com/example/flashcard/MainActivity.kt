@@ -25,11 +25,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyScreen(onNavigate = {
-                println("push")
-            })
 
             Greeting("")
+
+            MyHomeScreen(onNavigate = {
+                println("")
+            })
         }
     }
 }
@@ -53,7 +54,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 //to display a message and the button with a
 //good layout.
 @Composable
-fun MyScreen(onNavigate:() -> Unit){
+fun MyHomeScreen(onNavigate:() -> Unit){
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
