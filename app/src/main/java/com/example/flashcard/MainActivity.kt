@@ -19,18 +19,40 @@ import com.example.flashcard.ui.theme.FlashCardTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            FlashCardTheme {
 
-            Greeting("")
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = "home"
+                )
+                {
+                    composable("home") {
+                        MyHomeScreen(onNavigate = {
+                            navController.navigate("create")
+                        }
+                        )
+                    }
+                    composable("create") {
+                        MyCreateScreen(onNavigate = {
+                            navController.popBackStack()
+                        })
+                    }
 
-            MyHomeScreen(onNavigate = {
-                println("")
-            })
+                    composable ("study"){
+                        MyStudyScreen (){  }
+                    }
+                }
+            }
         }
     }
 }
@@ -42,7 +64,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "¡This FlashCard is to help you study! ",
+            text = "¡Welcome to FlashCards App! ",
             fontSize = 24.sp,
             modifier = modifier)
     }
@@ -60,12 +82,45 @@ fun MyHomeScreen(onNavigate:() -> Unit){
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("¡Welcome to FlashCards App!")
+        Text("Select an option to continue")
         Button(onClick = onNavigate) {
-            Text("Create Flashcard")
+            Text("Create Flashcard", fontSize = 16.sp)
         }
     }
 }
+
+@Composable
+fun MyStudyScreen(onNavigate:() -> Unit){
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Study My FlashCards")
+        Button(onClick = onNavigate) {
+            Text("Back",
+                fontSize = 16.sp)
+        }
+    }
+}
+
+
+@Composable
+fun MyCreateScreen(onNavigate:() -> Unit){
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Create a Flashcard to study")
+        Button(onClick = onNavigate) {
+            Text("Back",
+                fontSize = 16.sp)
+        }
+    }
+}
+
+
 
 @Preview(
     showBackground = true)
