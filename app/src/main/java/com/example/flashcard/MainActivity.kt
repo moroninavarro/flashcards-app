@@ -128,7 +128,7 @@ fun MyHomeScreen(onCreateClick:() -> Unit,
 
 
 
-
+//My composable function for my Study Screen, displaying buttons and the list of the flashcards
 @Composable
 fun MyStudyScreen(onNavigate: () -> Unit, flashcards: List<Flashcard>){
     var currentIndex by remember { mutableIntStateOf(0) }
