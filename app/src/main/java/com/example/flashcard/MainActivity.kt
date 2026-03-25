@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -25,8 +26,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,12 +85,14 @@ class MainActivity : ComponentActivity() {
 fun ReusableButton(
     text: String,
     onClick: () -> Unit,
-    color: Color
+    containerColor: Color,
+    modifier: Modifier
 ){
  Button(
      onClick = onClick,
+     modifier = modifier,
      colors = ButtonDefaults.buttonColors(
-         containerColor = Color.Black
+         containerColor = containerColor
      )
  ) {
      Text(text = text, color = Color.White)
@@ -101,49 +108,67 @@ fun ReusableButton(
 @Composable
 fun MyHomeScreen(onCreateClick:() -> Unit,
                  onStudyClick: () -> Unit){
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Select an option to continue")
-        ReusableButton("CREATE", onCreateClick, Color.Cyan)
-        ReusableButton("STUDY", onStudyClick, Color.Red)
+    Scaffold(
+        containerColor = Color(0xFFAABEE3)
+    ){
+        paddingValues ->
 
+        Column(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("¡Welcome to FlashCards App!", fontSize = 20.sp)
+            Text("Select an option to continue")
+            ReusableButton("CREATE", onCreateClick, Color(0xFF1A1616), modifier = Modifier)
+            ReusableButton("STUDY", onStudyClick, Color(0xFF1A1616), modifier = Modifier)
+        }
     }
 }
 
+
+
+
 @Composable
 fun MyStudyScreen(onNavigate: () -> Unit, flashcards: List<Flashcard>){
-    var currentIndex by remember { mutableStateOf(0) }
+    var currentIndex by remember { mutableIntStateOf(0) }
     var showAnswer by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceAround,
+        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     )
     {
-        Text("Study My FlashCards")
+        Text("Study Time", fontSize = 30.sp)
         if (flashcards.isNotEmpty()){
             if (showAnswer){
                 Text(flashcards[currentIndex].answer)
             }else{
                 Text(flashcards[currentIndex].question)
             }
+
+
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(0.6f),
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
             ){
-                ReusableButton("ANSWER", {showAnswer = !showAnswer},Color.Red)
-                ReusableButton("NEXT",onNavigate,Color.Red)
+                ReusableButton("ANSWER", {showAnswer = !showAnswer},Color(0xFF1A1616), modifier = Modifier.weight(1f))
+                ReusableButton("NEXT",{
+                    showAnswer = false
+                    if (currentIndex < flashcards.size -1){
+                        currentIndex++
+                    } else {
+                        currentIndex = 0
+                    }
+                },Color(0xFF1A1616), modifier = Modifier.weight(1f))
             }
 
 
         } else{
-            Text("First create your own FlashCards to start study :)")
+            Text("No flashcards yet. Create one to get started! :)", fontWeight = FontWeight.Bold)
         }
 
-        ReusableButton("BACK", onNavigate, Color.Green)
+        ReusableButton("BACK", onNavigate, Color(0xFF1A1616), modifier = Modifier)
     }
 }
 
@@ -159,10 +184,10 @@ fun MyCreateScreen(onNavigate: () -> Unit, flashcards: MutableList<Flashcard>){
     var answer by remember { mutableStateOf("") }
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceAround,
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Create a Flashcard to study")
+        Text("Create a Flashcard to study", fontSize = 30.sp)
 
         TextField(
             value = question,
@@ -174,13 +199,18 @@ fun MyCreateScreen(onNavigate: () -> Unit, flashcards: MutableList<Flashcard>){
             onValueChange = { answer = it },
             label = { Text("Answer") }
         )
-        ReusableButton("SAVE", {
-            val newCard = Flashcard(question,answer)
-            flashcards.add(newCard)
-            question = ""
-            answer = ""
-        }, Color.Black)
-        ReusableButton("BACK", onNavigate, Color.Red)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
+        ){
+            ReusableButton("SAVE", {
+                val newCard = Flashcard(question,answer)
+                flashcards.add(newCard)
+                question = ""
+                answer = ""
+            }, Color(0xFF1A1616), modifier = Modifier)
+            ReusableButton("BACK", onNavigate, Color(0xFF1A1616), modifier = Modifier)
+        }
 
     }
 }
@@ -190,14 +220,20 @@ fun MyCreateScreen(onNavigate: () -> Unit, flashcards: MutableList<Flashcard>){
 //@Preview(
 //    showBackground = true)
 //@Composable
-//fun MyCreateScreen(){
-//    Column(
-//        modifier = Modifier.fillMaxSize(),
-//        verticalArrangement = Arrangement.SpaceAround,
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        Text("Create a Flashcard to study")
+//fun MyHomeScreen(){
+//    Scaffold(
+//        containerColor = Color(0xFFF5EFE6)
+//    ){
+//            paddingValues ->
 //
-//        ReusableButton("BACK") { }
+//        Column(
+//            modifier = Modifier.fillMaxSize().padding(paddingValues),
+//            verticalArrangement = Arrangement.Center,
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//            Text("¡Welcome to FlashCards App!")
+//            Text("Select an option to continue")
+//
+//        }
 //    }
 //}
