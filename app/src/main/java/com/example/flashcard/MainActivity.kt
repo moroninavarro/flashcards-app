@@ -36,6 +36,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+
+
+fun saveSubjects(context: Context, subjects: List<Subject>){
+    val sharedPreferences = context.getSharedPreferences("flashcards", Context.MODE_PRIVATE)
+    val editor = sharedPreferences.edit()
+
+    val json = Gson().toJson(subjects)
+    editor.putString("subjects", json)
+    editor.apply()
+}
+
+fun loadSubjects(context: Context): MutableList<Subject>{
+    val sharedPreferences = context.getSharedPreferences("flashcards", Context.MODE_PRIVATE)
+    val json = sharedPreferences.getString("subjects", null)
+
+    return if (json !=null){
+        val type = object : TypeToken<MutableList<Subject>>() {}.type
+        Gson().fromJson(json, type)
+    }else {
+        mutableListOf()
+    }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,44 +69,105 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FlashCardTheme {
+                val context = LocalContext.current
+                val subjects = remember {
+                    mutableStateListOf<Subject>().apply {
+                        addAll(loadSubjects(context))
+                    }}
 
-                val flashcards = remember { mutableStateListOf<Flashcard>()}
+
+                var selectedSubject by remember { mutableStateOf<Subject?>(null)}
 
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
                     startDestination = "home"
-                )
-                {
+                ) {
                     composable("home") {
                         MyHomeScreen(
-                            onCreateClick = {
-                            navController.navigate("create")
-                        },
-                            onStudyClick = {
-                                navController.navigate("study")
-                            }
+                            subjects = subjects,
+                            onCreateSubject = { name ->
+                                subjects.add(Subject(name))
+                                saveSubjects(context, subjects)
+                            },
+                            onOpenSubject = {
+                                selectedSubject = it
+                                navController.navigate("subject")
+                            },
+                            context = context
                         )
- //Route for my createScreen
                     }
+
+
+                    composable("subject"){
+                        selectedSubject?.let { subject ->
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(subject.name,
+                                    fontSize = 28.sp,
+                                    fontWeight = FontWeight.Bold)
+
+                                ReusableButton(
+                                    "CREATE",
+                                    {navController.navigate("create")},
+                                    Color(0xFF1A1616),
+                                    Modifier
+                                )
+
+                                ReusableButton(
+                                    "STUDY",
+                                    {navController.navigate("study")},
+                                    Color(0xFF1A1616),
+                                    Modifier
+                                )
+
+                                ReusableButton(
+                                    "BACK",
+                                    {navController.popBackStack() },
+                                    Color(0xFF1A1616),
+                                    Modifier
+                                )
+                            }
+                        }
+                    }
+ //Route for my createScreen
+
                     composable("create") {
-                        MyCreateScreen(
-                            onNavigate = { navController.popBackStack() },
-                        flashcards = flashcards
-                        )
+                        selectedSubject?.let {subject ->
+                            MyCreateScreen(
+                                onNavigate = {navController.popBackStack()},
+                                subject = subject,
+                                subjects = subjects,
+                                context = context
+                            )
+                        }
                     }
 //Route for my StudyScreen
                     composable ("study"){
+                        selectedSubject?.let {subject ->
                         MyStudyScreen (
-                            flashcards = flashcards,
-                            onNavigate = { navController.popBackStack()
-                        })
+                            flashcards = subject.flashcards,
+                            onNavigate = { navController.popBackStack() }
+                        )
+                    }
                     }
                 }
             }
         }
     }
 }
+
+
+
+
+
+
+
+
+
 
 
 // A Reusable Button to be able to call it in different
@@ -110,22 +197,62 @@ fun ReusableButton(
 //to display a message and the button with a
 //good layout.
 @Composable
-fun MyHomeScreen(onCreateClick:() -> Unit,
-                 onStudyClick: () -> Unit){
+fun MyHomeScreen(
+    subjects: MutableList<Subject>,
+    onCreateSubject:(String) -> Unit,
+    onOpenSubject: (Subject) -> Unit,
+    context: Context){
     Scaffold(
         containerColor = Color(0xFFAABEE3)
     ){
         paddingValues ->
+    var subjectName by remember {mutableStateOf("")}
 
         Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
+                .padding(top = 40.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text("¡Welcome to FlashCards App!", fontSize = 20.sp)
-            Text("Select an option to continue")
-            ReusableButton("CREATE", onCreateClick, Color(0xFF1A1616), modifier = Modifier)
-            ReusableButton("STUDY", onStudyClick, Color(0xFF1A1616), modifier = Modifier)
+            Text("Create a Subject")
+            TextField(
+                value = subjectName,
+                onValueChange = {subjectName = it },
+                label = { Text("subject name") }
+            )
+            Button(onClick = {
+            if (subjectName.isNotBlank()){
+                onCreateSubject(subjectName)
+                subjectName = ""
+            }
+            }) {
+                Text("Add Subject")
+            }
+
+            subjects.forEach { subject ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ){
+                    Text(subject.name,
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold)
+
+                    Row{
+                        Button(onClick = {onOpenSubject(subject) }){
+                            Text("Open")
+                        }
+
+                        Button(onClick = {
+                            subjects.remove(subject)
+                            saveSubjects(context, subjects)
+                        }) {
+                            Text("❌")
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -193,9 +320,14 @@ data class Flashcard(
     val answer: String
 )
 
+data class Subject(
+    val name: String,
+    val flashcards: MutableList<Flashcard> = mutableListOf()
+)
+
 // My Create Screen
 @Composable
-fun MyCreateScreen(onNavigate: () -> Unit, flashcards: MutableList<Flashcard>){
+fun MyCreateScreen(onNavigate: () -> Unit, subject: Subject, subjects: List<Subject>, context: Context){
     var question by remember { mutableStateOf("") }
     var answer by remember { mutableStateOf("") }
     Column(
@@ -221,7 +353,8 @@ fun MyCreateScreen(onNavigate: () -> Unit, flashcards: MutableList<Flashcard>){
         ){
             ReusableButton("SAVE", {
                 val newCard = Flashcard(question,answer)
-                flashcards.add(newCard)
+                subject.flashcards.add(newCard)
+                saveSubjects(context, subjects)
                 question = ""
                 answer = ""
             }, Color(0xFF1A1616), modifier = Modifier)
@@ -233,23 +366,4 @@ fun MyCreateScreen(onNavigate: () -> Unit, flashcards: MutableList<Flashcard>){
 
 
 
-//@Preview(
-//    showBackground = true)
-//@Composable
-//fun MyHomeScreen(){
-//    Scaffold(
-//        containerColor = Color(0xFFF5EFE6)
-//    ){
-//            paddingValues ->
-//
-//        Column(
-//            modifier = Modifier.fillMaxSize().padding(paddingValues),
-//            verticalArrangement = Arrangement.Center,
-//            horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-//            Text("¡Welcome to FlashCards App!")
-//            Text("Select an option to continue")
-//
-//        }
-//    }
-//}
+
