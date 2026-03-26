@@ -16,6 +16,7 @@ Applying a good UI and user-friendly navigation.
 Tools I used to develop the software:
 * Android Studio
 * Git 
+* Virtual Device
 
 Programming languages I used and any libraries:
 * Kotlin
