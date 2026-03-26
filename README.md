@@ -1,7 +1,7 @@
 # Overview
 
 As a software engineer I want to keep improving my abilities, skills and knowledge. I created a FlashCard App to help you study different subjects.
-I would like to get a job as a Mobile application developer, so this software 
+I would like to get a job as a Mobile application developer, so this software helps me practice building real-world applications and improve my development skills
 
 This is a FlashCard App. You can Create, Save and Delete questions with their answer to help you study different subjects.
 Basically, the functionality of this software consist of inserting a subject, then you can open it as a folder and there is options
