@@ -36,4 +36,4 @@ A list of websites that I found helpful in this project
 List of things that I need to fix, improve, and add in the future.
 * An animation for each Card when the user push the Next button
 * I need to Improve UI
-* I need to add a button to use the Microphone, so the user can say the questions and answers instead of just type them.
+* I need to add a button to use the microphone, so the user can speak the questions and answers instead of just typing them.
