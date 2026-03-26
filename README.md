@@ -33,6 +33,7 @@ A list of websites that I found helpful in this project
 
 # Future Work
 
-{Make a list of things that you need to fix, improve, and add in the future.}
+List of things that I need to fix, improve, and add in the future.
 * An animation for each Card when the user push the Next button
-* Improve UI
+* I need to Improve UI
+* I need to add a button to use the Microphone, so the user can say the questions and answers instead of just type them.
