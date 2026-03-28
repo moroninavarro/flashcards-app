@@ -41,7 +41,8 @@ import androidx.compose.ui.platform.LocalContext
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-
+//My functions saveSubjects and loadSubjects are to be able to save the items even if
+//the user close the app.
 fun saveSubjects(context: Context, subjects: List<Subject>){
     val sharedPreferences = context.getSharedPreferences("flashcards", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
@@ -51,6 +52,9 @@ fun saveSubjects(context: Context, subjects: List<Subject>){
     editor.apply()
 }
 
+
+//My functions saveSubjects and loadSubjects are to be able to save the items even if
+//the user close the app.
 fun loadSubjects(context: Context): MutableList<Subject>{
     val sharedPreferences = context.getSharedPreferences("flashcards", Context.MODE_PRIVATE)
     val json = sharedPreferences.getString("subjects", null)
@@ -63,6 +67,9 @@ fun loadSubjects(context: Context): MutableList<Subject>{
     }
 }
 
+
+//My main activity to handle all the navigation in my app: Home, subject, Create, Study screens
+//And the buttons to navigate.
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -315,17 +322,22 @@ fun MyStudyScreen(onNavigate: () -> Unit, flashcards: List<Flashcard>){
     }
 }
 
+
+//My data class for Flashcard, each flashcard has a single study item with a question and answer.
 data class Flashcard(
     val question: String,
     val answer: String
 )
 
+//My data class Subject acts as a container for a collection of related flashcards.
 data class Subject(
     val name: String,
     val flashcards: MutableList<Flashcard> = mutableListOf()
 )
 
-// My Create Screen
+
+
+// My Create Screen displaying and handling the inputs for the questions and answers
 @Composable
 fun MyCreateScreen(onNavigate: () -> Unit, subject: Subject, subjects: List<Subject>, context: Context){
     var question by remember { mutableStateOf("") }
